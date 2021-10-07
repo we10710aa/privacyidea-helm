@@ -1,5 +1,6 @@
 # privacyidea-helm
 A sample privacyidea and mysql helm chart.
+
 This chart is not published to anywhere, you should clone this repo to use it.
 
 ### Getting Started
@@ -16,3 +17,17 @@ helm  install privacyidea .\
   --set privacyidea.secretKey=changeit \
   --set privacyidea.piPepper=changeit
 ```
+
+### Privacyidea configuration file
+Configs below are set by helm chart, do not set it yourself
+* SQLALCHEMY_DATABASE_URI
+* SECRET_KEY
+* PI_PEPPER
+* PI_ENCFILE
+* PI_AUDIT_KEY_PRIVATE
+* PI_AUDIT_KEY_PUBLIC
+
+
+For any extra configurations, change `pi.cfg` file.
+
+Refer to [here](https://privacyidea.readthedocs.io/en/latest/installation/system/inifile.html) for more information on privacyidea configuration.
