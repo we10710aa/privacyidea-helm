@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "privacyidea.fullname" .}}-config
+data:
+  pi.cfg: |-
+    SQLALCHEMY_DATABASE_URI = 'pymysql://{{ .Values.mysql.username }}:{{ include "privacyidea.mysql.realPassword" .}}@{{ template "privacyidea.mysql" . }}:3306/{{  .Values.mysql.database }}'
+    SECRET_KEY = {{ required "privacyidea.secretKey must be provided" .Values.privacyidea.secretKey | quote }}
+    PI_PEPPER = {{ required "privacyidea.piPepper must be provided" .Values.privacyidea.piPepper | quote }}
+    PI_ENCFILE = '/etc/privacyidea/enckey'
+    PI_AUDIT_KEY_PRIVATE = '/etc/privacyidea/private.pem'
+    PI_AUDIT_KEY_PUBLIC = '/etc/privacyidea/public.pem'
+    {{ .Files.Get "pi.cfg" | nindent 4}}

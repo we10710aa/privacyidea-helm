@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "privacyidea.labels" . | nindent 4 }}
+  name: {{ include "privacyidea.fullname" . }}
+spec:
+  replicas: {{ .Values.privacyidea.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "privacyidea.selectorLabels" . | nindent 6 }}
+      component: privacyidea
+  template:
+    metadata:
+      {{- with .Values.privacyidea.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "privacyidea.selectorLabels" . | nindent 8 }}
+        component: privacyidea
+    spec:
+      initContainers:
+      - name: {{ .Chart.Name }}-init
+        image: "{{ .Values.privacyidea.initImage.repository }}:{{ .Values.privacyidea.initImage.tag | default .Chart.AppVersion }}"
+        volumeMounts:
+          - name: config-volume
+            mountPath: "/etc/privacyidea-config/"
+          - name: key-volume
+            mountPath: "/etc/privacyidea/"
+        env:
+        - name: PRIVACYIDEA_CONFIGFILE
+          value: /etc/privacyidea-config/pi.cfg
+        envFrom:
+          - secretRef:
+              name: {{ include "privacyidea.fullname" .}}-admin-account-config
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.privacyidea.image.repository }}:{{ .Values.privacyidea.image.tag | default .Chart.AppVersion }}"
+        volumeMounts:
+          - name: config-volume
+            mountPath: "/etc/privacyidea-config/"
+          - name: key-volume
+            mountPath: "/etc/privacyidea/"
+        env:
+        - name: PRIVACYIDEA_CONFIGFILE
+          value: /etc/privacyidea-config/pi.cfg
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "privacyidea.fullname" .}}-config
+        - name: key-volume
+          persistentVolumeClaim:
+          {{- if .Values.persistence.privacyidea.existingClaim }}
+            claimName: {{ .Values.persistence.privacyidea.existingClaim }}
+          {{- else}}
+            claimName: {{ include "privacyidea.fullname" .}}-pvc
+          {{- end }}
+      {{- with .Values.privacyidea.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.privacyidea.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.privacyidea.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,59 @@
+# Default values for privacyidea.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+imagePullSecrets: []
+imagePullPolicy: IfNotPresent
+
+privacyidea:
+  image:
+    repository: we10710aa/privacyidea
+    tag: 3.6.2
+  initImage:
+    repository:  we10710aa/privacyidea-init
+    tag: 3.6.2
+  replicaCount: 1
+
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  adminUser: "admin"
+  adminPassword: ""
+  secretKey: ""
+  piPepper: ""
+
+mysql:
+  image:
+    repository: mysql
+    tag: 8
+  username: "user"
+  password: ""
+  rootPassword: ""
+  database: privacyidea
+
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+persistence:
+  privacyidea:
+    existingClaim: ""
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    size: 1Gi
+  mysql:
+    existingClaim: ""
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    size: 1Gi
+
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations:
+    {}
+  host: ""

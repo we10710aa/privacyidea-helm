@@ -1,0 +1,21 @@
+{{- if ( empty .Values.persistence.privacyidea.existingClaim )}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "privacyidea.fullname" .}}-pvc
+  labels:
+{{ include "privacyidea.labels" . | indent 4 }}
+spec:
+{{- if .Values.persistence.privacyidea.storageClass }}
+{{- if (eq "-" .Values.persistence.privacyidea.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: {{ .Values.persistence.privacyidea.storageClass }}
+{{- end }}
+{{- end }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.persistence.privacyidea.size }}
+{{- end -}}

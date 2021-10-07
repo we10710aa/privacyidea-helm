@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "privacyidea.fullname" . }}-service
+  labels:
+{{ include "privacyidea.labels" . | indent 4 }}
+spec:
+  ports:
+    - port: 5000
+  selector:
+{{ include "privacyidea.selectorLabels" . | indent 4 }}
+    component: privacyidea

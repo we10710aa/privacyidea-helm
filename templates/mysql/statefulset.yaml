@@ -1,0 +1,75 @@
+{{- $database := .Values.persistence.mysql -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "{{ template "privacyidea.mysql" . }}"
+  labels:
+{{ include "privacyidea.labels" . | indent 4 }}
+    component: database
+spec:
+  replicas: 1
+  serviceName: "{{ template "privacyidea.mysql" . }}"
+  selector:
+    matchLabels:
+{{ include "privacyidea.selectorLabels" . | indent 6 }}
+      component: database
+  template:
+    metadata:
+      labels:
+{{ include "privacyidea.labels" . | indent 8 }}
+        component: database
+{{- if .Values.mysql.podAnnotations }}
+{{ toYaml .Values.mysql.podAnnotations | indent 8 }}
+{{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: mysql
+        image: {{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        envFrom:
+          - secretRef:
+              name: "{{ template "privacyidea.mysql" . }}"
+        volumeMounts:
+        - name: database-data
+          mountPath: /var/lib/mysql
+      {{- if $database.existingClaim }}
+      volumes:
+      - name: "database-data"
+        persistentVolumeClaim:
+          claimName: {{ $database.existingClaim }}
+      {{- end -}}
+    {{- with .Values.mysql.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.mysql.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.mysql.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+  {{- if not  $database.existingClaim }}
+  volumeClaimTemplates:
+  - metadata:
+      name: "database-data"
+      labels:
+{{ include "privacyidea.labels" . | indent 8 }}
+    spec:
+      accessModes: [{{ $database.accessMode | quote }}]
+      {{- if $database.storageClass }}
+      {{- if (eq "-" $database.storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ $database.storageClass }}"
+      {{- end }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ $database.size | quote }}
+  {{- end -}}
